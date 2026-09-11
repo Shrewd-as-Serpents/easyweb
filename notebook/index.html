@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notebook</title>
+
+  <!-- Ink & Paper font pairing: Newsreader (serif) + DM Sans (sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- BANNER / COVER HEADER -->
+  <header class="banner">
+    <div class="banner-inner">
+      <h1 class="banner-title" id="banner-title" contenteditable="true" spellcheck="false">Untitled Notebook</h1>
+      <p class="banner-subtitle" id="banner-subtitle" contenteditable="true" spellcheck="false">A personal &amp; academic writing notebook</p>
+      <div class="banner-meta">
+        <span id="banner-author"></span>
+        <span class="dot">·</span>
+        <span id="banner-date"></span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- SIDEBAR / NAV -->
+    <aside class="sidebar">
+      <div class="capture-bar">
+        <input type="text" id="capture-input" class="capture-input" placeholder="Capere… quick capture, Enter to drop it in" autocomplete="off" />
+        <button id="capture-btn" class="capture-btn" title="Capture">+</button>
+      </div>
+
+      <div class="mode-toggle" role="tablist" aria-label="Data mode">
+        <button id="mode-notebook" class="mode-btn active" role="tab" aria-selected="true">Notebook</button>
+        <button id="mode-blocks" class="mode-btn" role="tab" aria-selected="false">Blocks</button>
+      </div>
+
+      <label class="archive-toggle-label">
+        <input type="checkbox" id="toggle-archive" />
+        Show Archivum (perfectum)
+      </label>
+
+      <nav class="nav" id="nav" aria-label="Sections"></nav>
+
+      <div class="sidebar-actions">
+        <label class="file-button">
+          Import JSON
+          <input type="file" id="import-input" accept="application/json,.json" hidden />
+        </label>
+        <button id="export-json" class="action-btn">Export JSON</button>
+        <button id="export-md" class="action-btn">Export Markdown</button>
+        <button id="export-bundle" class="action-btn">Export Bundle</button>
+      </div>
+
+      <p class="status" id="status" aria-live="polite"></p>
+    </aside>
+
+    <!-- CONTENT REGION (renderer output goes here) -->
+    <main class="content" id="content" aria-live="polite"></main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

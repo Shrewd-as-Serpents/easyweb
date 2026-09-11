@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="240" viewBox="0 0 640 240" role="img" aria-label="Figure placeholder">
+  <rect width="640" height="240" fill="#f3f0e8"/>
+  <rect x="1" y="1" width="638" height="238" fill="none" stroke="#e4e1d8" stroke-width="2"/>
+  <g fill="none" stroke="#8a8a86" stroke-width="2">
+    <rect x="40" y="60" width="180" height="120" rx="6"/>
+    <circle cx="500" cy="120" r="55"/>
+    <line x1="260" y1="60" x2="260" y2="180"/>
+  </g>
+  <text x="320" y="130" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="16" fill="#8a8a86">figure placeholder</text>
+</svg>

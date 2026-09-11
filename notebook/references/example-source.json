@@ -1,0 +1,10 @@
+{
+  "id": "r1",
+  "slug": "example-source",
+  "type": "book",
+  "title": "The Ionization of Gases by Hot Salts",
+  "authors": ["Aleister Crowley"],
+  "year": 1899,
+  "summary": "Notes on emission spectra from heated salt vapors. Referenced from the Body section.",
+  "tags": ["spectroscopy", "salts"]
+}
