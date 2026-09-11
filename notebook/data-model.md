@@ -98,12 +98,38 @@ to build a tree of any depth.
 | `type`     | string  | `heading`, `paragraph`, `quote`, `list`, `code`, `divider`, `callout`, `reference`, `note` (capture default), `mermaid` |
 | `content`  | string  | HTML/markdown for text types; raw Mermaid source for `type: "mermaid"` |
 | `parent_id`| string\|null | parent block id; `null` = root. A block may itself be a parent, enabling infinite depth |
-| `status`   | string, optional | one of `inceptum` (begun), `in_opere` (in progress), `perfectum` (completed — hidden from the main Blocks view by default), `suspensum` (on hold). Defaults to `inceptum` when absent. Applies to Notebook `body`/`appendices` entries too. |
+| `status`   | string, optional | one of `inceptum` (begun), `in_opere` (in progress), `perfectum` (completed — content locked read-only, see below; root-level Blocks entries also hide from the main view by default), `suspensum` (on hold). Defaults to `inceptum` when absent. Applies to Notebook `body`/`appendices` entries too. |
 | `by`       | string\|null, optional | free-text author/system-member tag, e.g. `"robin"`. Purely optional — never required, never inferred. |
 
 `mermaid` blocks render as a source textarea + live SVG preview instead of a
 contenteditable div (see `renderMermaidBlock` in `app.js`); Mermaid loads
 lazily from a CDN the first time one is rendered in a session.
+
+### Archiving a root block (Blocks mode)
+
+Cycling a **root-level** block's status pill to `perfectum` doesn't commit
+right away. Since that status also hides the block from the main Blocks view
+(see the table above), doing so silently the instant the pill is clicked would
+make the row disappear out from under the cursor with no way to tell what
+happened. Instead, `cycleStatus()` pauses on an inline three-way choice:
+
+- **Archive (read-only)** — commits the status change to `perfectum` and locks
+  the block's content (`contentEditable`/`readOnly`) until the status is
+  cycled again.
+- **Clear out** — deletes the block and its children via `removeBlockTree()`.
+  Choosing this option *is* the confirmation; there's no second prompt.
+- **Keep editing** — cancels; the status is left exactly as it was.
+
+This choice is transient view state, not part of the persisted schema: it
+lives in a single `pendingArchive` variable in `app.js` (the id of the block
+currently showing the choice, or `null`) and is never written to `data/
+notebook.json`. If the page reloads while the choice is showing, it simply
+resets — no partial state to clean up.
+
+The same gate only applies to **root** Blocks-mode entries. Non-root blocks
+and Notebook-mode entries (`body`/`appendices`) can still be set to
+`perfectum` in one click, since nothing hides them from view — only the
+content-lock behavior applies to them.
 
 ### Building the tree (recursive, no depth cap)
 
