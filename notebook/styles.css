@@ -179,6 +179,38 @@ html, body {
   position: relative;
   margin: .35rem 0;
 }
+/* Shown instead of an instant archive when a root block's status cycles to
+   "perfectum" — asks before the row leaves the list, rather than after. */
+.archive-choice {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+  margin: .3rem 0;
+  padding: .4rem .5rem;
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.archive-choice .muted-note { margin: 0; }
+.archive-choice button {
+  font-size: .72rem;
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  color: var(--ink-soft);
+  border-radius: 3px;
+  padding: .15rem .45rem;
+  cursor: pointer;
+}
+.archive-choice button:hover { color: var(--accent); border-color: var(--accent); }
+/* A "perfectum" entry's content is locked — the status pill is still the way
+   to reopen it, so only the text itself reads as frozen. */
+.editable.is-archived {
+  cursor: default;
+  background: var(--panel);
+  opacity: .82;
+}
+textarea.mermaid-source:read-only { opacity: .82; cursor: default; }
 .block-row {
   display: flex;
   gap: .5rem;

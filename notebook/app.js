@@ -274,6 +274,7 @@
     const body = document.createElement("div"); body.className = "block-body";
 
     body.appendChild(renderEntryTags(node, "blocks"));
+    if (pendingArchive === node.id) body.appendChild(renderArchiveChoice(node.id));
     body.appendChild(renderEntry(node, "blocks"));
 
     if (depth >= 4) {
@@ -333,6 +334,7 @@
     const ta = document.createElement("textarea");
     ta.className = "mermaid-source";
     ta.spellcheck = false;
+    ta.readOnly = b.status === "perfectum";
     ta.value = b.content || "";
     wrap.appendChild(ta);
 
@@ -367,11 +369,14 @@
   }
 
   // ---------- Editable block (shared) ----------
+  // A "perfectum" block is archived: its content locks read-only (the status
+  // pill stays clickable, so cycling the status again is how you reopen it).
   function renderEditableBlock(b, sectionKey) {
+    const archived = b.status === "perfectum";
     const div = document.createElement("div");
-    div.className = "editable notebook-block";
-    div.contentEditable = "true";
-    div.spellcheck = true;
+    div.className = "editable notebook-block" + (archived ? " is-archived" : "");
+    div.contentEditable = archived ? "false" : "true";
+    div.spellcheck = !archived;
     div.dataset.id = b.id;
     div.dataset.section = sectionKey;
     if (b.type === "divider") { div.textContent = "— — —"; }
@@ -395,12 +400,59 @@
   }
 
   // ---------- Status cycling (Latin vocabulary) ----------
+  // A root-level Blocks-mode item becomes eligible to vanish into the Archivum
+  // the moment its status cycles to "perfectum" (renderBlocks() hides
+  // perfectum roots unless the Archivum checkbox is on). Rather than let that
+  // happen mid-click, we pause on a choice instead of committing silently.
+  let pendingArchive = null; // id of the block currently showing the choice, or null
   function cycleStatus(id, section) {
     const b = findRecord(id, section);
     if (!b) return;
     const i = STATUS_ORDER.indexOf(b.status);
-    b.status = STATUS_ORDER[(i + 1) % STATUS_ORDER.length];
+    const next = STATUS_ORDER[(i + 1) % STATUS_ORDER.length];
+    const archiving = section === "blocks" && next === "perfectum" &&
+      (b.parent_id ?? null) === null && !showArchive;
+    if (archiving) { pendingArchive = id; render(); return; }
+    b.status = next;
     render(); scheduleSave();
+  }
+
+  // Renders the three-way choice in place of a pill cycle that would archive
+  // a root block: archive it read-only, delete it outright, or back out.
+  // Takes the block's id rather than the rendered node itself — `node` here
+  // comes from buildTree()'s `{ ...b, children: [...] }` spread, a throwaway
+  // copy for rendering, so mutating it would silently vanish on the next
+  // render() instead of reaching the real record in state.blocks.
+  function renderArchiveChoice(id) {
+    const box = document.createElement("div");
+    box.className = "archive-choice";
+
+    const msg = document.createElement("span");
+    msg.className = "muted-note";
+    msg.textContent = "Mark this complete?";
+    box.appendChild(msg);
+
+    const archiveBtn = document.createElement("button");
+    archiveBtn.textContent = "Archive (read-only)";
+    archiveBtn.title = "Moves to the Archivum; content becomes read-only until you cycle the status again";
+    archiveBtn.addEventListener("click", () => {
+      const b = findRecord(id, "blocks");
+      if (b) b.status = "perfectum";
+      pendingArchive = null;
+      render(); scheduleSave();
+    });
+
+    const clearBtn = document.createElement("button");
+    clearBtn.textContent = "Clear out";
+    clearBtn.title = "Delete this block and its children — choosing this is the confirmation";
+    clearBtn.addEventListener("click", () => { pendingArchive = null; removeBlockTree(id); });
+
+    const keepBtn = document.createElement("button");
+    keepBtn.textContent = "Keep editing";
+    keepBtn.addEventListener("click", () => { pendingArchive = null; render(); });
+
+    box.appendChild(archiveBtn); box.appendChild(clearBtn); box.appendChild(keepBtn);
+    return box;
   }
 
   // ---------- Optional author tag (@who — plural-system friendly, never required) ----------
@@ -481,8 +533,7 @@
   if (archiveToggle) {
     archiveToggle.addEventListener("change", () => { showArchive = archiveToggle.checked; render(); });
   }
-  function deleteBlock(id) {
-    if (!confirm("Delete this block and its children?")) return;
+  function removeBlockTree(id) {
     const toRemove = new Set([id]);
     let changed = true;
     while (changed) {
@@ -493,6 +544,10 @@
     }
     state.blocks = state.blocks.filter(b => !toRemove.has(b.id));
     render(); scheduleSave();
+  }
+  function deleteBlock(id) {
+    if (!confirm("Delete this block and its children?")) return;
+    removeBlockTree(id);
   }
 
   // ---------- localStorage cache ----------
